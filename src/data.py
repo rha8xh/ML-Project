@@ -4,6 +4,7 @@ import argparse
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("dataset_input", type=str, help='path to whole datset')
+    parser.add_argument("all_train_output", type=str, help='path to cleaned whole dataset')
     parser.add_argument("train_output_1", type=str, help='path to first training input .tsv file')
     parser.add_argument("train_output_2", type=str, help='path to second training input .tsv file')
     parser.add_argument("train_output_3", type=str, help='path to third training input .tsv file')

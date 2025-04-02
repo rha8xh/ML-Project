@@ -1,0 +1,3 @@
+For data run:
+
+python src/data.py data/cleaned_dataset.tsv data/train1.tsv data/train2.tsv data/train3.tsv train4.tsv data/test.tsv

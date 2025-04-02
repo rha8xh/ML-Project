@@ -1,0 +1,14 @@
+Participant_ID	Sleep_Hours	Sleep_Quality_Score	Stroop_Task_Reaction_Time	N_Back_Accuracy	Emotion_Regulation_Score	PVT_Reaction_Time	Age	Gender	BMI	Caffeine_Intake	Physical_Activity_Level	Stress_Level
+P34	8.69	4	2.13	63.98	14	323.41	21	Male	31.04	5	9	31
+P21	6.67	2	4.08	95.3	35	451.68	35	Female	28.06	5	0	12
+P56	8.53	16	3.51	64.76	41	391.48	34	Male	23.01	2	5	8
+P42	5.97	14	4.49	53.77	67	330.06	42	Male	26.98	1	5	17
+P36	7.85	11	3.59	87.39	43	241.51	38	Male	30.65	2	5	26
+P33	3.39	15	3.71	73.5	63	258.31	24	Female	30.6	4	9	2
+P60	4.95	6	4.42	85.45	21	419.01	22	Male	30.53	0	10	16
+P49	6.28	8	4.04	92.21	25	217.46	41	Female	33.72	1	4	40
+P28	6.09	8	4.32	74.96	39	448.36	27	Male	23.61	3	0	7
+P13	7.99	0	2.91	65.4	56	465.99	27	Female	20.49	3	4	9
+P24	5.2	9	3.63	82.26	30	211.65	34	Male	26.19	0	0	15
+P40	5.64	2	3.05	78.61	67	212.32	41	Male	26.12	1	1	20
+P2	8.7	12	2.54	65.27	21	288.95	20	Male	27.28	3	8	37

@@ -1,55 +1,50 @@
 import argparse
-
-
-class Node:
-    # TODO
-    pass
-
+import pandas as pd
+import numpy as np
+import pickle
+import decision_tree
 
 def load_dataset(file_name):
-    # TODO
-    pass
+    df = pd.read_csv(file_name, sep="\t")
+    return df
 
-
-def parse_criterion(criterion):
-    # TODO
-    pass
-
-
-def train_subtree(data, labels, max_depth, criterion):
-    # TODO
-    pass
-
+def train_subtree(data, max_depth, criterion):
+    criterion_func, optimize = criterion
+    return decision_tree.learn_tree(data, max_depth, criterion_func, optimize)
 
 def write_subtrees_to_file(subtrees, file_name):
-    # TODO
-    pass
-
+    with open(file_name, "wb") as f:
+        pickle.dump(subtrees, f)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("train_input_1", type=str, help='path to first training input .tsv file')
-    parser.add_argument("train_input_2", type=str, help='path to second training input .tsv file')
-    parser.add_argument("train_input_3", type=str, help='path to third training input .tsv file')
-    parser.add_argument("train_input_4", type=str, help='path to fourth training input .tsv file')
-    parser.add_argument("max_depth", type=int,
-                        help='maximum depth to which the tree should be built')
-    parser.add_argument("criterion", type=str, help='splitting criterion used to train this tree')
-    parser.add_argument("tree_out", type=str,
-                        help='path of the output .txt file to which the tree should be written')
+    parser.add_argument("train_input_1", type=str, help='Path to first training input .tsv file')
+    parser.add_argument("train_input_2", type=str, help='Path to second training input .tsv file')
+    parser.add_argument("train_input_3", type=str, help='Path to third training input .tsv file')
+    parser.add_argument("train_input_4", type=str, help='Path to fourth training input .tsv file')
+    parser.add_argument("max_depth", type=int, help='Maximum depth for the tree')
+    parser.add_argument("criterion", type=str, help='Splitting criterion (mutual_information, gini, or lowest_variance)')
+    parser.add_argument("tree_out", type=str, help='Path to output file where the forest is saved')
     args = parser.parse_args()
 
-    criterion = parse_criterion(args.criterion)
+    # parse the splitting criterion using the shared module
+    criterion = decision_tree.parse_criterion(args.criterion)
 
-    data_1, labels_1 = load_dataset(args.train_input_1)
-    data_2, labels_2 = load_dataset(args.train_input_2)
-    data_3, labels_3 = load_dataset(args.train_input_3)
-    data_4, labels_4 = load_dataset(args.train_input_4)
+    # load training datasets
+    data1 = load_dataset(args.train_input_1)
+    data2 = load_dataset(args.train_input_2)
+    data3 = load_dataset(args.train_input_3)
+    data4 = load_dataset(args.train_input_4)
 
+    # train one subtree on each training subset
     subtrees = []
-    subtrees.add(train_subtree(data = data_1, labels = labels_1, max_depth = args.max_depth, criterion = criterion))
-    subtrees.add(train_subtree(data = data_2, labels = labels_2, max_depth = args.max_depth, criterion = criterion))
-    subtrees.add(train_subtree(data = data_3, labels = labels_3, max_depth = args.max_depth, criterion = criterion))
-    subtrees.add(train_subtree(data = data_4, labels = labels_4, max_depth = args.max_depth, criterion = criterion))
+    subtrees.append(train_subtree(data1, args.max_depth, criterion))
+    subtrees.append(train_subtree(data2, args.max_depth, criterion))
+    subtrees.append(train_subtree(data3, args.max_depth, criterion))
+    subtrees.append(train_subtree(data4, args.max_depth, criterion))
 
+    print("Printing the structure of the first subtree:")
+    decision_tree.print_tree(subtrees[0])
+
+    # save the forest to file
     write_subtrees_to_file(subtrees, args.tree_out)

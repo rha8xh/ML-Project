@@ -23,11 +23,19 @@ if __name__ == '__main__':
     path = kagglehub.dataset_download("sacramentotechnology/sleep-deprivation-and-cognitive-performance")
     file_path = os.path.join(path, "sleep_deprivation_dataset_detailed.csv")
     df = pd.read_csv(file_path)
-    #print(df.head)
+    print(df.head)
 
     # remove unwanted columns
-    unwanted_columns = ["Daytime_Sleepiness", "Stroop Task reaction time", "N-back accuracy", "PVT reaction time"]
+    unwanted_columns = ["Participant_ID", "Daytime_Sleepiness", "Stroop_Task_Reaction_Time", "N_Back_Accuracy", "PVT_Reaction_Time"]
     df_clean = df.drop(columns=[col for col in unwanted_columns if col in df.columns])
+
+    if 'Gender' in df_clean.columns:
+        df_clean['Gender'] = df_clean['Gender'].map({'Female': 0, 'Male': 1})
+    
+    target = df_clean.pop('Sleep_Quality_Score')
+    threshold = target.median()
+    target_bin = (target >= threshold).astype(int)
+    df_clean['Sleep_Quality_Score'] = target_bin
     
     df_clean.to_csv(args.all_train_output, sep='\t', index=False)
     

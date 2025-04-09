@@ -1,8 +1,6 @@
 import argparse
 import pandas as pd
-import numpy as np
-import pickle
-import decision_tree
+from decision_tree import learn_tree, print_tree, parse_criterion
 
 def load_dataset(file_name):
     df = pd.read_csv(file_name, sep="\t")
@@ -10,11 +8,15 @@ def load_dataset(file_name):
 
 def train_subtree(data, max_depth, criterion):
     criterion_func, optimize = criterion
-    return decision_tree.learn_tree(data, max_depth, criterion_func, optimize)
+    return learn_tree(data, max_depth, criterion_func, optimize)
 
 def write_subtrees_to_file(subtrees, file_name):
-    with open(file_name, "wb") as f:
-        pickle.dump(subtrees, f)
+    with open(file_name, "w") as file:
+        # Open the file in "w" to truncate it first
+        # print_tree calls can then simply append onto blank file
+        pass
+    for i in range(len(subtrees)):
+        print_tree(subtrees[i], file_name)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -28,7 +30,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # parse the splitting criterion using the shared module
-    criterion = decision_tree.parse_criterion(args.criterion)
+    criterion = parse_criterion(args.criterion)
 
     # load training datasets
     data1 = load_dataset(args.train_input_1)
@@ -42,9 +44,6 @@ if __name__ == '__main__':
     subtrees.append(train_subtree(data2, args.max_depth, criterion))
     subtrees.append(train_subtree(data3, args.max_depth, criterion))
     subtrees.append(train_subtree(data4, args.max_depth, criterion))
-
-    print("Printing the structure of the first subtree:")
-    decision_tree.print_tree(subtrees[0])
 
     # save the forest to file
     write_subtrees_to_file(subtrees, args.tree_out)

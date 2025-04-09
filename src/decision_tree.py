@@ -73,6 +73,7 @@ class Node:
         self.vote = self.get_vote() # majority vote for the node
 
     def get_counts(self):
+        print(self.df.shape)
         return [(self.df.iloc[:, -1] == 0).sum(), (self.df.iloc[:, -1] == 1).sum()]
 
     def get_vote(self):
@@ -187,26 +188,28 @@ def learn_node(node, max_depth):
     if node.depth >= max_depth:
         print("Max depth reached at node with counts:", node.counts)
         return
-    attr = node.get_best_attribute()
+    attr, df_left, df_right = node.split()
     if attr is None:
         print("No valid attribute found at node with counts:", node.counts)
         return
 
     node.attr = attr
 
+    """
     df_0 = node.df[node.df[attr] == 0]
     df_1 = node.df[node.df[attr] == 1]
     if df_0.empty or df_1.empty:
         print("Empty split encountered at node with counts:", node.counts)
         return
     print(f"Splitting on attribute {attr} at depth {node.depth}")
-    node.left = Node(attr, 0, node.depth + 1, df_0, node.criterion_func, node.optimize)
-    node.right = Node(attr, 1, node.depth + 1, df_1, node.criterion_func, node.optimize)
+    """
+    node.left = Node(attr, 0, node.depth + 1, df_left, node.criterion_func, node.optimize)
+    node.right = Node(attr, 1, node.depth + 1, df_right, node.criterion_func, node.optimize)
     learn_node(node.left, max_depth)
     learn_node(node.right, max_depth)
 
 
-
+"""
 def print_tree(node, indent=""):
     if node is None:
         return
@@ -214,3 +217,19 @@ def print_tree(node, indent=""):
     if node.left is not None or node.right is not None:
         print_tree(node.left, indent + "  ")
         print_tree(node.right, indent + "  ")
+"""
+def print_tree(tree, file):
+    with open(file, "a") as file:
+        print_tree_rec(tree, file)
+
+
+def print_tree_rec(node, file):
+    if (node.depth == 0):
+        file.write("[%d 0/%d 1]\n" % (node.counts[0], node.counts[1]))
+    else:
+        file.write("| " * node.depth)
+        file.write("%s ?= %d: [%d 0/%d 0]\n" % (node.attr, node.attr_val, node.counts[0], node.counts[1]))
+    if (node.left != None):
+        print_tree_rec(node.left, file)
+    if (node.right != None):
+        print_tree_rec(node.right, file)

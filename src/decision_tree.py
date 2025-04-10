@@ -143,22 +143,27 @@ class Node:
     #     df_1 = self.df[self.df[attr] == 1]
     #     return attr, df_0, df_1
     def split(self):
+        # First, choose the best attribute.
         attr = self.get_best_attribute()
         if attr is None:
-            return None, None, None
+            return None  # No attribute available
 
-        # Get the best threshold for this attribute
+        # Now, search for the best threshold for splitting on this attribute.
         best_thresh, score = self.best_threshold(attr)
         if best_thresh is None:
-            print(f"No valid split found for {attr}")
-            return attr, self.df, pd.DataFrame()
-        
-        self.threshold = best_thresh  # store the threshold in the node
+            print(f"No valid split found for {attr}. Node becomes a leaf.")
+            return None  # Signal that a valid split was not found
+
+        self.threshold = best_thresh  # store the found threshold
         print(f"Splitting on {attr} with threshold {best_thresh}")
+
+        # Partition the data using the threshold.
         df_left = self.df[self.df[attr] <= best_thresh]
         df_right = self.df[self.df[attr] > best_thresh]
         if df_left.empty or df_right.empty:
-            print(f"Empty split encountered for {attr} at threshold {best_thresh}")
+            print(f"Empty split encountered for {attr} at threshold {best_thresh}. Node becomes a leaf.")
+            return None
+
         return attr, df_left, df_right
 
 
@@ -188,21 +193,20 @@ def learn_node(node, max_depth):
     if node.depth >= max_depth:
         print("Max depth reached at node with counts:", node.counts)
         return
-    attr, df_left, df_right = node.split()
-    if attr is None:
-        print("No valid attribute found at node with counts:", node.counts)
+
+    # Try to split the node.
+    result = node.split()
+    if result is None:
+        # No valid split was found; this node will remain a leaf.
+        print("No valid split; node becomes a leaf with counts:", node.counts)
         return
 
+    attr, df_left, df_right = result
+
+    # Update the node's splitting attribute (it will be valid now).
     node.attr = attr
 
-    """
-    df_0 = node.df[node.df[attr] == 0]
-    df_1 = node.df[node.df[attr] == 1]
-    if df_0.empty or df_1.empty:
-        print("Empty split encountered at node with counts:", node.counts)
-        return
-    print(f"Splitting on attribute {attr} at depth {node.depth}")
-    """
+    # Create left and right child nodes using the split data.
     node.left = Node(attr, 0, node.depth + 1, df_left, node.criterion_func, node.optimize)
     node.right = Node(attr, 1, node.depth + 1, df_right, node.criterion_func, node.optimize)
     learn_node(node.left, max_depth)

@@ -1,6 +1,7 @@
 import argparse
 import pandas as pd
 from decision_tree import learn_tree, print_tree, parse_criterion
+import pickle
 
 def load_dataset(file_name):
     df = pd.read_csv(file_name, sep="\t")
@@ -10,13 +11,18 @@ def train_subtree(data, max_depth, criterion):
     criterion_func, optimize = criterion
     return learn_tree(data, max_depth, criterion_func, optimize)
 
+# # to text file
+# def write_subtrees_to_file(subtrees, file_name):
+#     with open(file_name, "w") as file:
+#         # Open the file in "w" to truncate it first
+#         # print_tree calls can then simply append onto blank file
+#         pass
+#     for i in range(len(subtrees)):
+#         print_tree(subtrees[i], file_name)
 def write_subtrees_to_file(subtrees, file_name):
-    with open(file_name, "w") as file:
-        # Open the file in "w" to truncate it first
-        # print_tree calls can then simply append onto blank file
-        pass
-    for i in range(len(subtrees)):
-        print_tree(subtrees[i], file_name)
+    # Open the file in binary write mode and dump the forest using pickle.
+    with open(file_name, "wb") as f:
+        pickle.dump(subtrees, f)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

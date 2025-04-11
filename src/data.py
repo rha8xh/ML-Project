@@ -40,16 +40,16 @@ if __name__ == '__main__':
     df_clean.to_csv(args.all_train_output, sep='\t', index=False)
     
     # reserve 10% of the data for testing and use the remaining for training
-    train_df, test_df = train_test_split(df_clean, test_size=0.1, random_state=42)
+    train_df, test_df = train_test_split(df_clean, test_size=1/6, random_state=42)
     
     # shuffle the training set and split it into four roughly equal subgroups
     train_df_shuffled = train_df.sample(frac=1, random_state=42)
-    train_groups = np.array_split(train_df_shuffled, 4)
+    train_groups = np.array_split(train_df_shuffled, 2) # changed from 4 to 2
     
     train_groups[0].to_csv(args.train_output_1, sep='\t', index=False)
     train_groups[1].to_csv(args.train_output_2, sep='\t', index=False)
-    train_groups[2].to_csv(args.train_output_3, sep='\t', index=False)
-    train_groups[3].to_csv(args.train_output_4, sep='\t', index=False)
+    # train_groups[2].to_csv(args.train_output_3, sep='\t', index=False)
+    # train_groups[3].to_csv(args.train_output_4, sep='\t', index=False)
     
     # Save the test set to file (TSV format)
     test_df.to_csv(args.test_output, sep='\t', index=False)

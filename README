@@ -1,10 +1,13 @@
 For data processing run:
 
-python src/data.py data/cleaned_dataset.tsv data/train1.tsv data/train2.tsv data/train3.tsv data/train4.tsv data/test.tsv
+Old: python src/data.py data/cleaned_dataset.tsv data/train1.tsv data/train2.tsv data/train3.tsv data/train4.tsv data/test.tsv
+New: python src/data.py data/Sleep_Data_Cleaned.csv data/full_cleaned.tsv data/train.tsv data/test.tsv
 
 For training run (max depth of 5, mutual information to split):
 
-python src/train.py data/train1.tsv data/train2.tsv data/train3.tsv data/train4.tsv 5 mutual_information train/forest.pkl
+Old: python src/train.py data/train1.tsv data/train2.tsv data/train3.tsv data/train4.tsv 5 mutual_information train/forest.pkl
+New: python src/train.py data/train.tsv 5 mutual_information train/forest.txt train/forest.pkl
+
 
 For testing and evaluation:
 

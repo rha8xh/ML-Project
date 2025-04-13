@@ -1,7 +1,8 @@
 import argparse
 import pandas as pd
-from decision_tree import learn_tree, print_tree, parse_criterion
+import numpy as np
 import pickle
+from decision_tree import learn_tree, print_tree, parse_criterion
 
 def load_dataset(file_name):
     df = pd.read_csv(file_name, sep="\t")
@@ -11,45 +12,49 @@ def train_subtree(data, max_depth, criterion):
     criterion_func, optimize = criterion
     return learn_tree(data, max_depth, criterion_func, optimize)
 
-# # to text file
-# def write_subtrees_to_file(subtrees, file_name):
-#     with open(file_name, "w") as file:
-#         # Open the file in "w" to truncate it first
-#         # print_tree calls can then simply append onto blank file
-#         pass
-#     for i in range(len(subtrees)):
-#         print_tree(subtrees[i], file_name)
-def write_subtrees_to_file(subtrees, file_name):
-    # Open the file in binary write mode and dump the forest using pickle.
-    with open(file_name, "wb") as f:
+def create_bootstrap_sample(df, seed):
+    # Create a bootstrap sample from the full training data (sampling with replacement)
+    return df.sample(n=len(df), replace=True, random_state=seed)
+
+def write_subtrees_to_file(subtrees, text_file_name, pickle_file_name):
+    # Write the text representation to a text file.
+    # Open the text file in write mode to truncate it first.
+    with open(text_file_name, "w") as f:
+        for tree in subtrees:
+            print_tree(tree, text_file_name)
+    # Write the full forest as a pickle file (binary mode).
+    with open(pickle_file_name, "wb") as f:
         pickle.dump(subtrees, f)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("train_input_1", type=str, help='Path to first training input .tsv file')
-    parser.add_argument("train_input_2", type=str, help='Path to second training input .tsv file')
-    # parser.add_argument("train_input_3", type=str, help='Path to third training input .tsv file')
-    # parser.add_argument("train_input_4", type=str, help='Path to fourth training input .tsv file')
-    parser.add_argument("max_depth", type=int, help='Maximum depth for the tree')
-    parser.add_argument("criterion", type=str, help='Splitting criterion (mutual_information, gini, or lowest_variance)')
-    parser.add_argument("tree_out", type=str, help='Path to output file where the forest is saved')
+    parser = argparse.ArgumentParser(
+        description="Train a random forest of 3 trees using bootstrap sampling"
+    )
+    # Use a single training file (created from your cleaned dataset)
+    parser.add_argument("train_input", type=str,
+                        help='Path to training input TSV file (e.g., data/train.tsv)')
+    parser.add_argument("max_depth", type=int,
+                        help='Maximum depth for each decision tree')
+    parser.add_argument("criterion", type=str,
+                        help='Splitting criterion (mutual_information, gini, or lowest_variance)')
+    parser.add_argument("tree_text_out", type=str,
+                        help='Path to output text file for the forest (e.g., train/forest.txt)')
+    parser.add_argument("tree_pickle_out", type=str,
+                        help='Path to output pickle file for the forest (e.g., train/forest.pkl)')
     args = parser.parse_args()
 
-    # parse the splitting criterion using the shared module
+    # Parse the splitting criterion using your shared module.
     criterion = parse_criterion(args.criterion)
 
-    # load training datasets
-    data1 = load_dataset(args.train_input_1)
-    data2 = load_dataset(args.train_input_2)
-    # data3 = load_dataset(args.train_input_3)
-    # data4 = load_dataset(args.train_input_4)
+    # Load the training dataset.
+    train_df = load_dataset(args.train_input)
 
-    # train one subtree on each training subset
+    # Build a random forest of 3 trees using bootstrap sampling.
     subtrees = []
-    subtrees.append(train_subtree(data1, args.max_depth, criterion))
-    subtrees.append(train_subtree(data2, args.max_depth, criterion))
-    # subtrees.append(train_subtree(data3, args.max_depth, criterion))
-    # subtrees.append(train_subtree(data4, args.max_depth, criterion))
+    for i in range(3):
+        sample = create_bootstrap_sample(train_df, seed=42 + i)
+        tree = train_subtree(sample, args.max_depth, criterion)
+        subtrees.append(tree)
 
-    # save the forest to file
-    write_subtrees_to_file(subtrees, args.tree_out)
+    # Write both the text version and the pickle file of the forest.
+    write_subtrees_to_file(subtrees, args.tree_text_out, args.tree_pickle_out)

@@ -1,4 +1,4 @@
-Train Accuracy: 0.72
-Train F1 Score: 0.6666666666666667
-Test Accuracy: 0.5
-Test F1 Score: 0.45054945054945056
+Train Accuracy: 0.9307692307692308
+Train F1 Score: 0.926965785585973
+Test Accuracy: 0.9318181818181818
+Test F1 Score: 0.9314997405293202

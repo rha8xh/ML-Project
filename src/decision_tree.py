@@ -71,6 +71,7 @@ class Node:
         self.optimize = optimize
         self.counts = self.get_counts() # [# of 0 labels, # of 1 labels]
         self.vote = self.get_vote() # majority vote for the node
+        self.chosen_attr = list()
 
     def get_counts(self):
         print(self.df.shape)
@@ -86,6 +87,8 @@ class Node:
         best_attr = None
         best_score = None
         for (attr, X) in self.df.iloc[:, :-1].items():
+            if (attr in self.chosen_attr):
+                continue
             score = func(X.tolist(), Y)
             print(f"Attribute: {attr}, Score: {score}")
             if best_score is None:
@@ -209,6 +212,10 @@ def learn_node(node, max_depth):
     # Create left and right child nodes using the split data.
     node.left = Node(attr, 0, node.depth + 1, df_left, node.criterion_func, node.optimize)
     node.right = Node(attr, 1, node.depth + 1, df_right, node.criterion_func, node.optimize)
+    node.left.chosen_attr.extend(node.chosen_attr)
+    node.left.chosen_attr.append(attr)
+    node.right.chosen_attr.extend(node.chosen_attr)
+    node.right.chosen_attr.append(attr)
     learn_node(node.left, max_depth)
     learn_node(node.right, max_depth)
 

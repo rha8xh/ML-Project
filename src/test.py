@@ -19,7 +19,7 @@ def predict_row(row, node):
     if node.left is None and node.right is None:
         return node.vote
     # Compare the feature value against the threshold stored in the node
-    if row[node.attr] <= node.threshold:
+    if row[node.left.attr] <= node.left.threshold:
         return predict_row(row, node.left)
     else:
         return predict_row(row, node.right)

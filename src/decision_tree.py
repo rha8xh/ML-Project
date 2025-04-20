@@ -60,11 +60,12 @@ def parse_criterion(criterion):
         raise ValueError("Unknown criterion: " + criterion)
 
 class Node:
-    def __init__(self, attr=None, attr_val=None, depth=0, df=None, criterion_func=mutual_information, optimize='max'):
+    def __init__(self, attr=None, threshold=None, depth=0, df=None, criterion_func=mutual_information, optimize='max'):
         self.left = None
         self.right = None
         self.attr = attr # the attribute used for splitting
-        self.attr_val = attr_val # the attribute value leading to this node
+        self.threshold = threshold # the attribute value leading to this node
+        self.compare_symbol = None
         self.depth = depth
         self.df = df # the df at this node
         self.criterion_func = criterion_func
@@ -157,7 +158,7 @@ class Node:
             print(f"No valid split found for {attr}. Node becomes a leaf.")
             return None  # Signal that a valid split was not found
 
-        self.threshold = best_thresh  # store the found threshold
+        # self.threshold = best_thresh  # store the found threshold
         print(f"Splitting on {attr} with threshold {best_thresh}")
 
         # Partition the data using the threshold.
@@ -167,7 +168,7 @@ class Node:
             print(f"Empty split encountered for {attr} at threshold {best_thresh}. Node becomes a leaf.")
             return None
 
-        return attr, df_left, df_right
+        return attr, best_thresh, df_left, df_right
 
 
 
@@ -204,18 +205,19 @@ def learn_node(node, max_depth):
         print("No valid split; node becomes a leaf with counts:", node.counts)
         return
 
-    attr, df_left, df_right = result
+    attr, threshold, df_left, df_right = result
 
     # Update the node's splitting attribute (it will be valid now).
-    node.attr = attr
+    # node.attr = attr
 
     # Create left and right child nodes using the split data.
-    node.left = Node(attr, 0, node.depth + 1, df_left, node.criterion_func, node.optimize)
-    node.right = Node(attr, 1, node.depth + 1, df_right, node.criterion_func, node.optimize)
+    node.left = Node(attr, threshold, node.depth + 1, df_left, node.criterion_func, node.optimize)
+    node.right = Node(attr, threshold, node.depth + 1, df_right, node.criterion_func, node.optimize)
+    node.left.compare_symbol = "<"
+    node.right.compare_symbol = ">"
+    node.chosen_attr.append(attr)
     node.left.chosen_attr.extend(node.chosen_attr)
-    node.left.chosen_attr.append(attr)
     node.right.chosen_attr.extend(node.chosen_attr)
-    node.right.chosen_attr.append(attr)
     learn_node(node.left, max_depth)
     learn_node(node.right, max_depth)
 
@@ -239,7 +241,7 @@ def print_tree_rec(node, file):
         file.write("[%d 0/%d 1]\n" % (node.counts[0], node.counts[1]))
     else:
         file.write("| " * node.depth)
-        file.write("%s ?= %d: [%d 0/%d 0]\n" % (node.attr, node.attr_val, node.counts[0], node.counts[1]))
+        file.write("%s %s %.1f: [%d 0/ %d 1]\n" % (node.attr, node.compare_symbol, node.threshold, node.counts[0], node.counts[1]))
     if (node.left != None):
         print_tree_rec(node.left, file)
     if (node.right != None):

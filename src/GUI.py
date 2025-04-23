@@ -6,6 +6,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from decision_tree import learn_tree, parse_criterion
 import networkx as nx
 
+
 class SleepQualityApp:
     def __init__(self, root):
         self.root = root
@@ -14,7 +15,6 @@ class SleepQualityApp:
         self.df = None
         self.tree = None
 
-        # Input frame
         input_frame = ttk.LabelFrame(root, text="Input Features")
         input_frame.pack(padx=10, pady=5, fill="x")
 
@@ -29,12 +29,11 @@ class SleepQualityApp:
         ttk.Label(input_frame, text="Splitting Criterion:").pack()
         self.criterion_var = tk.StringVar(value="gini")
         ttk.Combobox(input_frame, textvariable=self.criterion_var,
-                     values=["gini", "mutual_information", "lowest_variance"]).pack()
+                     values=["gini", "mutual_information", "lowest_variance"], state='readonly').pack()
 
         self.depth_var = tk.IntVar(value=3)
         self.create_input(input_frame, "Max Tree Depth:", "depth", var=self.depth_var)
 
-        # Control buttons
         control_frame = ttk.Frame(root)
         control_frame.pack(pady=5)
         ttk.Button(control_frame, text="Upload CSV", command=self.upload_csv).pack(side="left", padx=5)
@@ -47,9 +46,6 @@ class SleepQualityApp:
         self.result_label = ttk.Label(root, text="")
         self.result_label.pack()
 
-        # Visualization area
-        self.plot_frame = ttk.LabelFrame(root, text="Data Visualization")
-        self.plot_frame.pack(padx=10, pady=10, fill="both", expand=True)
 
     def visualize_tree(self):
         if self.tree is None:
@@ -73,7 +69,6 @@ class SleepQualityApp:
             if parent is not None:
                 G.add_edge(parent, node_id, label=direction)
 
-            # Recurse on children
             if node.left:
                 traverse(node.left, node_id, '<=', depth + 1, pos_x - 2 ** (3 - depth))
             if node.right:
@@ -102,14 +97,12 @@ class SleepQualityApp:
         if path:
             self.df = pd.read_csv(path)
 
-            # Convert last column to binary based on its median
             label_column = self.df.columns[-1]
             median_value = self.df[label_column].median()
             self.df["Label"] = (self.df[label_column] > median_value).astype(int)
             self.df = self.df.drop(columns=[label_column])
 
             self.result_label.config(text=f"Loaded {len(self.df)} rows. Labels binarized.")
-            self.plot_data()
 
     def train_tree(self):
         if self.df is None:
@@ -148,27 +141,13 @@ class SleepQualityApp:
                 else:
                     node = node.right
 
-            # Use the vote at the leaf node
             prediction = node.vote if node is not None else "Unknown"
             self.result_label.config(text=f"Predicted Sleep Quality: {prediction}")
 
         except Exception as e:
             self.result_label.config(text=f"Error: {str(e)}")
 
-    def plot_data(self):
-        for widget in self.plot_frame.winfo_children():
-            widget.destroy()
 
-        fig, axs = plt.subplots(1, 2, figsize=(8, 4))
-        self.df.hist(column="Age", ax=axs[0])
-        self.df["Label"].value_counts().plot(kind="bar", ax=axs[1], title="Sleep Quality Distribution")
-
-        canvas = FigureCanvasTkAgg(fig, master=self.plot_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill="both", expand=True)
-
-
-# Run the app
 if __name__ == "__main__":
     root = tk.Tk()
     app = SleepQualityApp(root)
